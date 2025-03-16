@@ -1,6 +1,14 @@
-import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting } from 'obsidian';
-
-// Remember to rename these classes and interfaces!
+import {
+	App,
+	Editor,
+	MarkdownView,
+	Modal,
+	Notice,
+	Plugin,
+	PluginSettingTab,
+	Setting
+} from 'obsidian';
+import AssistantPanelView from './app/RightPane';
 
 interface MyPluginSettings {
 	mySetting: string;
@@ -10,11 +18,13 @@ const DEFAULT_SETTINGS: MyPluginSettings = {
 	mySetting: 'default'
 }
 
-export default class MyPlugin extends Plugin {
+export default class AiAssistantPluginWrapper extends Plugin {
 	settings: MyPluginSettings;
 
 	async onload() {
 		await this.loadSettings();
+
+		await AssistantPanelView.register(this);
 
 		// This creates an icon in the left ribbon.
 		const ribbonIconEl = this.addRibbonIcon('dice', 'Sample Plugin', (evt: MouseEvent) => {
@@ -82,6 +92,7 @@ export default class MyPlugin extends Plugin {
 
 	}
 
+
 	async loadSettings() {
 		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
 	}
@@ -108,9 +119,9 @@ class SampleModal extends Modal {
 }
 
 class SampleSettingTab extends PluginSettingTab {
-	plugin: MyPlugin;
+	plugin: AiAssistantPluginWrapper;
 
-	constructor(app: App, plugin: MyPlugin) {
+	constructor(app: App, plugin: AiAssistantPluginWrapper) {
 		super(app, plugin);
 		this.plugin = plugin;
 	}
