@@ -9,6 +9,7 @@ import {
 	Setting
 } from 'obsidian';
 import AssistantPanelView from './app/RightPane';
+import {CoreLogic} from "./core/CoreLogic";
 
 declare const MODE: string;
 
@@ -20,10 +21,12 @@ const DEFAULT_SETTINGS: MyPluginSettings = {
 	mySetting: 'default'
 }
 
-export default class AiAssistantPluginWrapper extends Plugin {
+export default class AiAssistantPlugin extends Plugin {
 	settings: MyPluginSettings;
+	core: CoreLogic;
 
 	async onload() {
+		this.core = new CoreLogic();
 		await this.loadSettings();
 
 		await AssistantPanelView.register(this);
@@ -94,13 +97,17 @@ export default class AiAssistantPluginWrapper extends Plugin {
 
 	}
 
-
 	async loadSettings() {
 		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
 	}
 
 	async saveSettings() {
 		await this.saveData(this.settings);
+	}
+
+
+	fetchMetadata():Promise<void> {
+		return this.core.metadataFor(this.app.workspace.getActiveFile()?.name);
 	}
 }
 
@@ -121,9 +128,9 @@ class SampleModal extends Modal {
 }
 
 class SampleSettingTab extends PluginSettingTab {
-	plugin: AiAssistantPluginWrapper;
+	plugin: AiAssistantPlugin;
 
-	constructor(app: App, plugin: AiAssistantPluginWrapper) {
+	constructor(app: App, plugin: AiAssistantPlugin) {
 		super(app, plugin);
 		this.plugin = plugin;
 	}

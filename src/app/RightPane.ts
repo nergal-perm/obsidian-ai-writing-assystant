@@ -1,12 +1,13 @@
-import {ItemView, Plugin, Workspace, WorkspaceLeaf} from "obsidian";
+import {ItemView, Workspace, WorkspaceLeaf} from "obsidian";
+import AiAssistantPlugin from "../main";
 
 
 const VIEW_TYPE_WRITING_ASSISTANT: string = 'writing-assistant-side-panel'
 
 export default class AssistantPanelView extends ItemView {
-	plugin: Plugin;
+	plugin: AiAssistantPlugin;
 
-	constructor(leaf: WorkspaceLeaf, plugin: Plugin) {
+	constructor(leaf: WorkspaceLeaf, plugin: AiAssistantPlugin) {
 		super(leaf)
 		this.plugin = plugin
 	}
@@ -31,10 +32,12 @@ export default class AssistantPanelView extends ItemView {
 	}
 
 	private update() {
-		const container = this.containerEl.children[1]
-		container.empty()
+		this.plugin.fetchMetadata().then(() => {
+			const container = this.containerEl.children[1]
+			container.empty()
 
-		container.createEl('h4', { text: 'Current time: ' + new Date().toLocaleTimeString() })
+			container.createEl('h4', {text: 'Current time: ' + new Date().toLocaleTimeString()})
+		});
 	}
 
 	static async activateView(workspace: Workspace) {
@@ -64,7 +67,7 @@ export default class AssistantPanelView extends ItemView {
 		}
 	}
 
-	static async register(plugin: Plugin) {
+	static async register(plugin: AiAssistantPlugin) {
 		plugin.registerView(
 			VIEW_TYPE_WRITING_ASSISTANT,
 			(leaf: WorkspaceLeaf) => new AssistantPanelView(leaf, plugin)
