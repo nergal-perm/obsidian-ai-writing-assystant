@@ -1,17 +1,18 @@
-import {DbWrapper} from '../db/DbWrapper';
+import {DbAdapter} from '../db/db';
+import {Metadata} from "../types";
 
 export class CoreLogic {
-	db: DbWrapper;
+	db: DbAdapter;
 
 	constructor(mode: string) {
 		if (mode === 'development') {
-			this.db = DbWrapper.createNullable();
+			this.db = DbAdapter.createNullable();
 		} else {
-			this.db = DbWrapper.create();
+			this.db = DbAdapter.create();
 		}
 	}
 
-	metadataFor(activeFile: string | undefined) :Promise<void>{
+	metadataFor(activeFile: string | undefined) :Promise<Metadata>{
 		return this.db.fetchMetadata(activeFile);
 	}
 }

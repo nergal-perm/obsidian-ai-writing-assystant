@@ -32,11 +32,14 @@ export default class AssistantPanelView extends ItemView {
 	}
 
 	private update() {
-		this.plugin.fetchMetadata().then(() => {
+		this.plugin.fetchMetadata().then((metadata) => {
 			const container = this.containerEl.children[1]
 			container.empty()
 
 			container.createEl('h4', {text: 'Current time: ' + new Date().toLocaleTimeString()})
+			if (metadata.title) {
+				container.createEl('h4', {text: `Current file: ${metadata.title}`})
+			}
 		});
 	}
 

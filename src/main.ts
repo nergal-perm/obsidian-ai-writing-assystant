@@ -10,6 +10,7 @@ import {
 } from 'obsidian';
 import AssistantPanelView from './app/RightPane';
 import {CoreLogic} from "./core/CoreLogic";
+import {Metadata} from "./types";
 
 declare const MODE: string;
 
@@ -26,7 +27,7 @@ export default class AiAssistantPlugin extends Plugin {
 	core: CoreLogic;
 
 	async onload() {
-		this.core = new CoreLogic();
+		this.core = new CoreLogic(MODE);
 		await this.loadSettings();
 
 		await AssistantPanelView.register(this);
@@ -106,7 +107,7 @@ export default class AiAssistantPlugin extends Plugin {
 	}
 
 
-	fetchMetadata():Promise<void> {
+	fetchMetadata(): Promise<Metadata> {
 		return this.core.metadataFor(this.app.workspace.getActiveFile()?.name);
 	}
 }
