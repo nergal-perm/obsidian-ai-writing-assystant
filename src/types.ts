@@ -1,3 +1,19 @@
-export interface Metadata {
-	title: string;
+export class Metadata {
+	assistantOn: boolean;
+
+	static create() {
+		return new Metadata();
+	}
+
+	constructor() {
+		this.assistantOn = false;
+	}
+
+	toggleAssistant(): void {
+		if (this.hasOwnProperty("assistantOn")) {
+			this.assistantOn = !this.assistantOn;
+		} else {
+			this.assistantOn = true;
+		}
+	}
 }

@@ -110,6 +110,11 @@ export default class AiAssistantPlugin extends Plugin {
 	fetchMetadata(): Promise<Metadata> {
 		return this.core.metadataFor(this.app.workspace.getActiveFile()?.name);
 	}
+
+
+	async updateMetadata(newVersion: Metadata) {
+		this.core.updateMetadata(this.app.workspace.getActiveFile()?.name, newVersion);
+	}
 }
 
 class SampleModal extends Modal {

@@ -1,4 +1,4 @@
-import {ItemView, Workspace, WorkspaceLeaf} from "obsidian";
+import {ItemView, Notice, Workspace, WorkspaceLeaf} from "obsidian";
 import AiAssistantPlugin from "../main";
 
 
@@ -36,9 +36,19 @@ export default class AssistantPanelView extends ItemView {
 			const container = this.containerEl.children[1]
 			container.empty()
 
-			container.createEl('h4', {text: 'Current time: ' + new Date().toLocaleTimeString()})
-			if (metadata.title) {
-				container.createEl('h4', {text: `Current file: ${metadata.title}`})
+			const button = container.createEl('button', {text: 'Toggle Assistant'});
+			button.addEventListener('click', async () => {
+				try {
+					metadata.toggleAssistant();
+					await this.plugin.updateMetadata(metadata);
+					this.update();
+				} catch (error) {
+					new Notice('Failed to enable assistant');
+				}
+			});
+
+			if (metadata.hasOwnProperty('assistantOn')) {
+				container.createEl('p', {text: `Assistant is ${metadata.assistantOn ? 'enabled' : 'disabled'}`})
 			}
 		});
 	}

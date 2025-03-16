@@ -15,4 +15,10 @@ export class CoreLogic {
 	metadataFor(activeFile: string | undefined) :Promise<Metadata>{
 		return this.db.fetchMetadata(activeFile);
 	}
+
+	updateMetadata(activeFile: string | undefined, newVersion: Metadata) {
+		if (activeFile) {
+			this.db.saveMetadata(activeFile, newVersion);
+		}
+	}
 }
