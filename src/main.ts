@@ -10,6 +10,8 @@ import {
 } from 'obsidian';
 import AssistantPanelView from './app/RightPane';
 
+declare const MODE: string;
+
 interface MyPluginSettings {
 	mySetting: string;
 }
@@ -109,7 +111,7 @@ class SampleModal extends Modal {
 
 	onOpen() {
 		const {contentEl} = this;
-		contentEl.setText('Woah!');
+		contentEl.setText('Woah, MODE is: ' + MODE);
 	}
 
 	onClose() {

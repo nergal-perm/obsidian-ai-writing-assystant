@@ -1,5 +1,6 @@
 import {ItemView, Plugin, Workspace, WorkspaceLeaf} from "obsidian";
 
+
 const VIEW_TYPE_WRITING_ASSISTANT: string = 'writing-assistant-side-panel'
 
 export default class AssistantPanelView extends ItemView {
@@ -19,6 +20,21 @@ export default class AssistantPanelView extends ItemView {
 	}
 
 	async onOpen(): Promise<void> {
+		this.registerEvent(
+			this.app.workspace.on("active-leaf-change", (leaf) => {
+				if (leaf?.getViewState().type === "markdown") {
+					this.update()
+				}
+			})
+		);
+		this.update()
+	}
+
+	private update() {
+		const container = this.containerEl.children[1]
+		container.empty()
+
+		container.createEl('h4', { text: 'Current time: ' + new Date().toLocaleTimeString() })
 	}
 
 	static async activateView(workspace: Workspace) {
@@ -55,4 +71,5 @@ export default class AssistantPanelView extends ItemView {
 		)
 		await AssistantPanelView.activateView(plugin.app.workspace)
 	}
+
 }
