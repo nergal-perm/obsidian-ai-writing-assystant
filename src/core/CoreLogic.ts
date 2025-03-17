@@ -1,16 +1,16 @@
 import { ModelAdapter} from '../models/ModelAdapter';
 import { DbAdapter } from '../db/db';
-import { Metadata } from "../types";
+import { Metadata, PluginPreferences } from "../types";
 
 export class CoreLogic {
 	db: DbAdapter;
 	llm: ModelAdapter;
 
-	static createFor(mode: string) {
+	static createFor(mode: string, settings?: PluginPreferences, ) {
 		if (mode === 'development') {
 			return new CoreLogic(DbAdapter.createNullable(), ModelAdapter.createNullable());
 		} else {
-			return new CoreLogic(DbAdapter.create(), ModelAdapter.create());
+			return new CoreLogic(DbAdapter.create(), ModelAdapter.create(settings));
 		}
 	}
 

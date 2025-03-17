@@ -10,27 +10,23 @@ import {
 } from 'obsidian';
 import AssistantPanelView from './app/RightPane';
 import {CoreLogic} from "./core/CoreLogic";
-import {Metadata} from "./types";
+import {Metadata, PluginPreferences} from "./types";
 
 declare const MODE: string;
 
-interface MyPluginSettings {
-	mySetting: string;
-}
-
-const DEFAULT_SETTINGS: MyPluginSettings = {
-	mySetting: 'default'
+const DEFAULT_SETTINGS: PluginPreferences = {
+	geminiApiKey: ''
 }
 
 export default class AiAssistantPlugin extends Plugin {
-	settings: MyPluginSettings;
+	settings: PluginPreferences;
 	core: CoreLogic;
 
 	async onload() {
-		this.core = CoreLogic.createFor(MODE);
 		await this.loadSettings();
-
 		await AssistantPanelView.register(this);
+
+		this.core = CoreLogic.createFor(MODE, this.settings);
 
 		// This creates an icon in the left ribbon.
 		const ribbonIconEl = this.addRibbonIcon('dice', 'Sample Plugin', (evt: MouseEvent) => {
@@ -82,7 +78,7 @@ export default class AiAssistantPlugin extends Plugin {
 		});
 
 		// This adds a settings tab so the user can configure various aspects of the plugin
-		this.addSettingTab(new SampleSettingTab(this.app, this));
+		this.addSettingTab(new AiAssistantSettingTab(this.app, this));
 
 		// If the plugin hooks up any global DOM events (on parts of the app that doesn't belong to this plugin)
 		// Using this function will automatically remove the event listener when this plugin is disabled.
@@ -107,9 +103,14 @@ export default class AiAssistantPlugin extends Plugin {
 	}
 
 	async generateQuestions(): Promise<string[]> {
+		const content = await this.getCurrentFileText();
+		return this.core.generateQuestionsFor(content);
+	}
+
+	private async getCurrentFileText() {
 		const lastFile = this.app.workspace.getActiveFile();
 		const content = lastFile ? await this.app.vault.cachedRead(lastFile) : undefined;
-		return this.core.generateQuestionsFor(content);
+		return content;
 	}
 
 	fetchMetadata(): Promise<Metadata> {
@@ -137,7 +138,7 @@ class SampleModal extends Modal {
 	}
 }
 
-class SampleSettingTab extends PluginSettingTab {
+class AiAssistantSettingTab extends PluginSettingTab {
 	plugin: AiAssistantPlugin;
 
 	constructor(app: App, plugin: AiAssistantPlugin) {
@@ -151,13 +152,13 @@ class SampleSettingTab extends PluginSettingTab {
 		containerEl.empty();
 
 		new Setting(containerEl)
-			.setName('Setting #1')
-			.setDesc('It\'s a secret')
+			.setName('Gemini API Key')
+			.setDesc('Can be obtained at https://aistudio.google.com/')
 			.addText(text => text
-				.setPlaceholder('Enter your secret')
-				.setValue(this.plugin.settings.mySetting)
+				.setPlaceholder('Enter your Gemini API Key')
+				.setValue(this.plugin.settings.geminiApiKey)
 				.onChange(async (value) => {
-					this.plugin.settings.mySetting = value;
+					this.plugin.settings.geminiApiKey = value;
 					await this.plugin.saveSettings();
 				}));
 	}

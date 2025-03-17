@@ -17,3 +17,7 @@ export class Metadata {
 		}
 	}
 }
+
+export interface PluginPreferences {
+	geminiApiKey: string;
+}

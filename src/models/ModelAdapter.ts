@@ -1,3 +1,6 @@
+import { PluginPreferences } from "src/types";
+import GeminiModel from "./GeminiModel";
+
 // Default questions to show when user starts typing
 export const DEFAULT_QUESTIONS = [
 	"What do you currently believe about this?",
@@ -8,8 +11,8 @@ export const DEFAULT_QUESTIONS = [
 export class ModelAdapter {
 	private model: ModelWrapper;
 
-	static create(): ModelAdapter {
-		return new ModelAdapter(new MockModel());
+	static create(settings: PluginPreferences | undefined): ModelAdapter {
+		return new ModelAdapter(new GeminiModel(settings?.geminiApiKey));
 	}
 	static createNullable(): ModelAdapter {
 		return new ModelAdapter(new MockModel());
@@ -24,7 +27,7 @@ export class ModelAdapter {
 	}
 }
 
-interface ModelWrapper {
+export interface ModelWrapper {
 	generateQuestionsFor(content: string): Promise<string[]>;
 
 }
@@ -33,5 +36,5 @@ class MockModel implements ModelWrapper {
 	generateQuestionsFor(content: string): Promise<string[]> {
 		return Promise.resolve(DEFAULT_QUESTIONS);
 	}
-
 }
+

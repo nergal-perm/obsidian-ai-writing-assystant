@@ -46,7 +46,8 @@ export default class AssistantPanelView extends ItemView {
 					ul.createEl('li', { text: question });
 				});
 			} catch (error) {
-				new Notice('Failed to enable assistant');
+				console.log(error);
+				new Notice('Failed to enable assistant\n' + error);
 			}
 		});
 	}
