@@ -1,18 +1,25 @@
-import {DbAdapter} from '../db/db';
-import {Metadata} from "../types";
+import { ModelAdapter} from '../models/ModelAdapter';
+import { DbAdapter } from '../db/db';
+import { Metadata } from "../types";
 
 export class CoreLogic {
 	db: DbAdapter;
+	llm: ModelAdapter;
 
-	constructor(mode: string) {
+	static createFor(mode: string) {
 		if (mode === 'development') {
-			this.db = DbAdapter.createNullable();
+			return new CoreLogic(DbAdapter.createNullable(), ModelAdapter.createNullable());
 		} else {
-			this.db = DbAdapter.create();
+			return new CoreLogic(DbAdapter.create(), ModelAdapter.create());
 		}
 	}
 
-	metadataFor(activeFile: string | undefined) :Promise<Metadata>{
+	constructor(db: DbAdapter, llm: ModelAdapter) {
+		this.db = db;
+		this.llm = llm;
+	}
+
+	metadataFor(activeFile: string | undefined): Promise<Metadata> {
 		return this.db.fetchMetadata(activeFile);
 	}
 
@@ -20,5 +27,12 @@ export class CoreLogic {
 		if (activeFile) {
 			this.db.saveMetadata(activeFile, newVersion);
 		}
+	}
+
+	async generateQuestionsFor(content: string | undefined): Promise<string[]> {
+		if (!content) {
+			return [];
+		}
+		return this.llm.generateQuestionsFor(content);
 	}
 }

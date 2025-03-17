@@ -1,4 +1,4 @@
-import {ItemView, Notice, Workspace, WorkspaceLeaf} from "obsidian";
+import { ItemView, Notice, Workspace, WorkspaceLeaf } from "obsidian";
 import AiAssistantPlugin from "../main";
 
 
@@ -32,23 +32,21 @@ export default class AssistantPanelView extends ItemView {
 	}
 
 	private update() {
-		this.plugin.fetchMetadata().then((metadata) => {
-			const container = this.containerEl.children[1]
-			container.empty()
+		const container = this.containerEl.children[1]
+		container.empty()
 
-			const button = container.createEl('button', {text: 'Toggle Assistant'});
-			button.addEventListener('click', async () => {
-				try {
-					metadata.toggleAssistant();
-					await this.plugin.updateMetadata(metadata);
-					this.update();
-				} catch (error) {
-					new Notice('Failed to enable assistant');
-				}
-			});
-
-			if (metadata.hasOwnProperty('assistantOn')) {
-				container.createEl('p', {text: `Assistant is ${metadata.assistantOn ? 'enabled' : 'disabled'}`})
+		const button = container.createEl('button', { text: 'Activate input mode' });
+		button.addEventListener('click', async () => {
+			try {
+				const questions: string[] = await this.plugin.generateQuestions();
+				container.empty();
+				container.createEl('h2', { text: 'Questions' });
+				const ul = container.createEl('ul', {});
+				questions.forEach((question) => {
+					ul.createEl('li', { text: question });
+				});
+			} catch (error) {
+				new Notice('Failed to enable assistant');
 			}
 		});
 	}
@@ -70,7 +68,7 @@ export default class AssistantPanelView extends ItemView {
 			} catch (e) {
 			}
 			if (leaf) {
-				await leaf.setViewState({type: VIEW_TYPE_WRITING_ASSISTANT, active: true});
+				await leaf.setViewState({ type: VIEW_TYPE_WRITING_ASSISTANT, active: true });
 			}
 
 			// "Reveal" the leaf in case it is in a collapsed sidebar

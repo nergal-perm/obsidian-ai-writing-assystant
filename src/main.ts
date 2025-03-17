@@ -27,7 +27,7 @@ export default class AiAssistantPlugin extends Plugin {
 	core: CoreLogic;
 
 	async onload() {
-		this.core = new CoreLogic(MODE);
+		this.core = CoreLogic.createFor(MODE);
 		await this.loadSettings();
 
 		await AssistantPanelView.register(this);
@@ -106,11 +106,15 @@ export default class AiAssistantPlugin extends Plugin {
 		await this.saveData(this.settings);
 	}
 
+	async generateQuestions(): Promise<string[]> {
+		const lastFile = this.app.workspace.getActiveFile();
+		const content = lastFile ? await this.app.vault.cachedRead(lastFile) : undefined;
+		return this.core.generateQuestionsFor(content);
+	}
 
 	fetchMetadata(): Promise<Metadata> {
 		return this.core.metadataFor(this.app.workspace.getActiveFile()?.name);
 	}
-
 
 	async updateMetadata(newVersion: Metadata) {
 		this.core.updateMetadata(this.app.workspace.getActiveFile()?.name, newVersion);
