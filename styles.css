@@ -6,3 +6,12 @@ available in the app when your plugin is enabled.
 If your plugin does not need CSS, delete this file.
 
 */
+/* Editor mode */
+span.custom-highlight {
+	background-color: rgba(255, 208, 0, 0.3);
+}
+
+/* Preview mode */
+.markdown-preview-view .custom-highlight {
+	background-color: rgba(255, 208, 0, 0.3);
+}

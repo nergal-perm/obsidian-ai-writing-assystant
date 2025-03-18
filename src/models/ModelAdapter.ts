@@ -1,4 +1,4 @@
-import { PluginPreferences } from "src/types";
+import { HighlightText, PluginPreferences } from "src/types";
 import GeminiModel from "./GeminiModel";
 
 // Default questions to show when user starts typing
@@ -25,14 +25,29 @@ export class ModelAdapter {
 	async generateQuestionsFor(content: string): Promise<string[]> {
 		return this.model.generateQuestionsFor(content);
 	}
+
+	async analyseForHighlights(content: string): Promise<HighlightText[]> {
+		return this.model.analyseForHighlights(content);
+	}
 }
 
 export interface ModelWrapper {
+	analyseForHighlights(content: string): Promise<HighlightText[]>;
 	generateQuestionsFor(content: string): Promise<string[]>;
 
 }
 
 class MockModel implements ModelWrapper {
+	analyseForHighlights(content: string): Promise<HighlightText[]> {
+		return Promise.resolve([{
+			id: "1",
+			labelType: "highlight",
+			text: "Hello, world!",
+			startIndex: 0,
+			endIndex: 12,
+		}
+		]);
+	}
 	generateQuestionsFor(content: string): Promise<string[]> {
 		return Promise.resolve(DEFAULT_QUESTIONS);
 	}

@@ -1,5 +1,6 @@
 import { ItemView, Notice, Workspace, WorkspaceLeaf } from "obsidian";
 import AiAssistantPlugin from "../main";
+import { HighlightText } from "src/types";
 
 
 const VIEW_TYPE_WRITING_ASSISTANT: string = 'writing-assistant-side-panel'
@@ -35,8 +36,8 @@ export default class AssistantPanelView extends ItemView {
 		const container = this.containerEl.children[1]
 		container.empty()
 
-		const button = container.createEl('button', { text: 'Activate input mode' });
-		button.addEventListener('click', async () => {
+		const inputModeButton = container.createEl('button', { text: 'Activate input mode' });
+		inputModeButton.addEventListener('click', async () => {
 			try {
 				const questions: string[] = await this.plugin.generateQuestions();
 				container.empty();

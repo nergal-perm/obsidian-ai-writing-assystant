@@ -1,22 +1,27 @@
+import { HighlightText } from "src/types";
 import { ModelWrapper } from "./ModelAdapter";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 export default class GeminiModel implements ModelWrapper {
 	private model;
 
-	constructor(private apiKey: string | undefined) {
+	constructor(apiKey: string | undefined) {
 		if (!apiKey) {
 			throw new Error("API key is required to use the Gemini model");
 		}
 		this.model = new GoogleGenerativeAI(apiKey).getGenerativeModel({
-			model: 'gemini-1.5-flash',
+			model: 'gemini-1.5-pro',
 			generationConfig: {
 				responseMimeType: 'application/json'
 			}
 		});
 	}
 
-	generateQuestionsFor(content: string): Promise<string[]> {
+	async analyseForHighlights(content: string): Promise<HighlightText[]> {
+		throw new Error("Method not implemented.");
+	}
+
+	async generateQuestionsFor(content: string): Promise<string[]> {
 		const prompt = GeminiModel.constructQuestionPrompt(content);
 		console.log(prompt);
 		return this.model.generateContent(prompt).then((result) => {
@@ -24,7 +29,6 @@ export default class GeminiModel implements ModelWrapper {
 			return JSON.parse(result.response.text())
 		});
 	}
-
 
 	// Helper method to construct the question generation prompt
 	private static constructQuestionPrompt(content: string): string {

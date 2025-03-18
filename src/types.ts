@@ -21,3 +21,11 @@ export class Metadata {
 export interface PluginPreferences {
 	geminiApiKey: string;
 }
+
+export interface HighlightText {
+	id: string;
+	labelType: string;
+	text: string;
+	startIndex: number;
+	endIndex: number;
+}

@@ -9,8 +9,10 @@ import {
 	Setting
 } from 'obsidian';
 import AssistantPanelView from './app/RightPane';
-import {CoreLogic} from "./core/CoreLogic";
-import {Metadata, PluginPreferences} from "./types";
+import { CoreLogic } from "./core/CoreLogic";
+import { HighlightText, Metadata, PluginPreferences } from "./types";
+import { EditorView, Decoration, ViewPlugin, ViewUpdate } from '@codemirror/view';
+import { StateField, StateEffect, RangeSet, RangeValue } from '@codemirror/state';
 
 declare const MODE: string;
 
@@ -25,6 +27,12 @@ export default class AiAssistantPlugin extends Plugin {
 	async onload() {
 		await this.loadSettings();
 		await AssistantPanelView.register(this);
+
+		// 4. Register extensions
+		this.registerEditorExtension([
+			highlightField,
+			highlightPlugin
+		]);
 
 		this.core = CoreLogic.createFor(MODE, this.settings);
 
@@ -48,15 +56,25 @@ export default class AiAssistantPlugin extends Plugin {
 				new SampleModal(this.app).open();
 			}
 		});
+
 		// This adds an editor command that can perform some operation on the current editor instance
 		this.addCommand({
-			id: 'sample-editor-command',
-			name: 'Sample editor command',
-			editorCallback: (editor: Editor, view: MarkdownView) => {
-				console.log(editor.getSelection());
-				editor.replaceSelection('Sample Editor Command');
+			id: 'analyse-for-highlights',
+			name: 'Analyse for highlights',
+			editorCallback: async (editor: Editor, view: MarkdownView) => {
+				// @ts-expect-error
+				const editorView = editor.cm as EditorView;
+				const newRanges = await this.analyseForHighlights()
+					.then(highlights => highlights.map(h => ({ from: h.startIndex, to: h.endIndex })));
+				editorView.dispatch({
+					effects: [
+						clearHighlightsEffect.of(null),
+						...newRanges.map((range: { from: number; to: number; }) => addHighlightEffect.of(range))
+					]
+				});
 			}
 		});
+
 		// This adds a complex command that can check whether the current state of the app allows execution of the command
 		this.addCommand({
 			id: 'open-sample-modal-complex',
@@ -107,6 +125,11 @@ export default class AiAssistantPlugin extends Plugin {
 		return this.core.generateQuestionsFor(content);
 	}
 
+	async analyseForHighlights(): Promise<HighlightText[]> {
+		const content = await this.getCurrentFileText();
+		return this.core.analyseForHighlights(content);
+	}
+
 	private async getCurrentFileText() {
 		const lastFile = this.app.workspace.getActiveFile();
 		const content = lastFile ? await this.app.vault.cachedRead(lastFile) : undefined;
@@ -128,12 +151,12 @@ class SampleModal extends Modal {
 	}
 
 	onOpen() {
-		const {contentEl} = this;
+		const { contentEl } = this;
 		contentEl.setText('Woah, MODE is: ' + MODE);
 	}
 
 	onClose() {
-		const {contentEl} = this;
+		const { contentEl } = this;
 		contentEl.empty();
 	}
 }
@@ -147,7 +170,7 @@ class AiAssistantSettingTab extends PluginSettingTab {
 	}
 
 	display(): void {
-		const {containerEl} = this;
+		const { containerEl } = this;
 
 		containerEl.empty();
 
@@ -163,3 +186,47 @@ class AiAssistantSettingTab extends PluginSettingTab {
 				}));
 	}
 }
+
+// 1. Define state effects
+const addHighlightEffect = StateEffect.define<{ from: number; to: number }>();
+const clearHighlightsEffect = StateEffect.define();
+
+// 2. Create state field for decorations
+const highlightField = StateField.define<RangeSet<Decoration>>({
+	create() {
+		return Decoration.none;
+	},
+	update(value, tr) {
+		value = value.map(tr.changes);
+
+		for (const effect of tr.effects) {
+			if (effect.is(addHighlightEffect)) {
+				const deco = Decoration.mark({
+					class: 'custom-highlight',
+				}).range(effect.value.from, effect.value.to);
+
+				value = value.update({ add: [deco], sort: true });
+			}
+			else if (effect.is(clearHighlightsEffect)) {
+				value = Decoration.none;
+			}
+		}
+
+		return value;
+	}
+});
+
+// 3. Updated ViewPlugin implementation
+const highlightPlugin = ViewPlugin.fromClass(class {
+	decorations: RangeSet<Decoration>;
+
+	constructor(view: EditorView) {
+		this.decorations = view.state.field(highlightField);
+	}
+
+	update(update: ViewUpdate) {
+		this.decorations = update.view.state.field(highlightField);
+	}
+}, {
+	decorations: v => v.decorations
+});

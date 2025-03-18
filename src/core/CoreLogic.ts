@@ -1,6 +1,6 @@
 import { ModelAdapter} from '../models/ModelAdapter';
 import { DbAdapter } from '../db/db';
-import { Metadata, PluginPreferences } from "../types";
+import { HighlightText, Metadata, PluginPreferences } from "../types";
 
 export class CoreLogic {
 	db: DbAdapter;
@@ -34,5 +34,12 @@ export class CoreLogic {
 			return [];
 		}
 		return this.llm.generateQuestionsFor(content);
+	}
+
+	async analyseForHighlights(content: string | undefined): Promise<HighlightText[]> {
+		if (!content) {
+			return [];
+		}
+		return this.llm.analyseForHighlights(content);
 	}
 }
