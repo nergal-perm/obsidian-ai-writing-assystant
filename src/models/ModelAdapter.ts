@@ -1,5 +1,6 @@
 import { HighlightText, PluginPreferences } from "src/types";
 import GeminiModel from "./GeminiModel";
+import { randomUUID } from "crypto";
 
 // Default questions to show when user starts typing
 export const DEFAULT_QUESTIONS = [
@@ -39,17 +40,33 @@ export interface ModelWrapper {
 
 class MockModel implements ModelWrapper {
 	analyseForHighlights(content: string): Promise<HighlightText[]> {
-		return Promise.resolve([{
-			id: "1",
-			labelType: "highlight",
-			text: "Hello, world!",
-			startIndex: 0,
-			endIndex: 12,
-		}
-		]);
+		console.log(content);
+		return Promise.resolve(
+			this.getMatchIndices(content, /\s(систем)/g, "claim")
+				.concat(this.getMatchIndices(content, /\s(работ)/g, "evidence"))
+		);
 	}
+
 	generateQuestionsFor(content: string): Promise<string[]> {
 		return Promise.resolve(DEFAULT_QUESTIONS);
+	}
+
+	getMatchIndices(text: string, pattern: RegExp, style: string): HighlightText[] {
+
+		const matches: Array<HighlightText> = [];
+		let match: RegExpExecArray | null;
+
+		while ((match = pattern.exec(text)) !== null) {
+			matches.push({
+				id: randomUUID(),
+				labelType: style,
+				text: match[0],
+				startIndex: match.index,
+				endIndex: match.index + match[0].length
+			});
+		}
+
+		return matches;
 	}
 }
 

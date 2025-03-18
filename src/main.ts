@@ -64,12 +64,11 @@ export default class AiAssistantPlugin extends Plugin {
 			editorCallback: async (editor: Editor, view: MarkdownView) => {
 				// @ts-expect-error
 				const editorView = editor.cm as EditorView;
-				const newRanges = await this.analyseForHighlights()
-					.then(highlights => highlights.map(h => ({ from: h.startIndex, to: h.endIndex })));
+				const newRanges = await this.analyseForHighlights();
 				editorView.dispatch({
 					effects: [
 						clearHighlightsEffect.of(null),
-						...newRanges.map((range: { from: number; to: number; }) => addHighlightEffect.of(range))
+						...newRanges.map((range) => addHighlightEffect.of(range))
 					]
 				});
 			}
@@ -188,7 +187,7 @@ class AiAssistantSettingTab extends PluginSettingTab {
 }
 
 // 1. Define state effects
-const addHighlightEffect = StateEffect.define<{ from: number; to: number }>();
+const addHighlightEffect = StateEffect.define<HighlightText>();
 const clearHighlightsEffect = StateEffect.define();
 
 // 2. Create state field for decorations
@@ -202,8 +201,8 @@ const highlightField = StateField.define<RangeSet<Decoration>>({
 		for (const effect of tr.effects) {
 			if (effect.is(addHighlightEffect)) {
 				const deco = Decoration.mark({
-					class: 'custom-highlight',
-				}).range(effect.value.from, effect.value.to);
+					class: `highlight-${effect.value.labelType}`,
+				}).range(effect.value.startIndex, effect.value.endIndex);
 
 				value = value.update({ add: [deco], sort: true });
 			}

@@ -1,6 +1,5 @@
 import { ItemView, Notice, Workspace, WorkspaceLeaf } from "obsidian";
 import AiAssistantPlugin from "../main";
-import { HighlightText } from "src/types";
 
 
 const VIEW_TYPE_WRITING_ASSISTANT: string = 'writing-assistant-side-panel'
